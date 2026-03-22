@@ -1,0 +1,144 @@
+@model VetPanelPremium.Models.Owner
+@{ ViewData["Title"] = "Müşteri Profili"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-person-vcard text-primary me-2"></i> Müşteri Profili</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Listeye Dön
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="premium-card p-4 border-top border-primary border-4 text-center h-100">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-person-fill fs-1"></i>
+            </div>
+            <h4 class="fw-bold text-dark">@Model?.FullName</h4>
+            <p class="text-muted mb-4"><i class="bi bi-telephone-fill"></i> @Model?.PhoneNumber</p>
+            
+            <hr class="text-muted" />
+            
+            <div class="text-start mt-4">
+                <p class="mb-2"><strong class="text-secondary">TC / VKN:</strong> <br /> @(string.IsNullOrEmpty(Model?.IdentityNumber) ? "Belirtilmemiş" : Model?.IdentityNumber)</p>
+                <p class="mb-2"><strong class="text-secondary">Adres:</strong> <br /> @(string.IsNullOrEmpty(Model?.Address) ? "Belirtilmemiş" : Model?.Address)</p>
+                <p class="mb-4"><strong class="text-secondary">Kayıt Tarihi:</strong> <br /> @Model?.RegisteredDate.ToShortDateString()</p>
+            </div>
+
+            <div class="alert alert-@(Model?.DebtBalance > 0 ? "danger" : "success") text-start shadow-sm border-0">
+                <small class="fw-bold d-block mb-1"><i class="bi bi-wallet2"></i> Güncel Kasa Durumu</small>
+                <h3 class="fw-bold mb-0">@Model?.DebtBalance.ToString("C")</h3>
+                
+                @if (Model?.DebtBalance > 0)
+                {
+                    <button type="button" class="btn btn-sm btn-success w-100 mt-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#tahsilatModal">
+                        <i class="bi bi-cash-coin"></i> Kasaya Tahsilat Al
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="premium-card p-4 h-100 border-top border-success border-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-box2-heart text-success me-2"></i> Kayıtlı Hastalar (Petler)</h5>
+                <a asp-controller="Pets" asp-action="Create" asp-route-ownerId="@Model?.Id" class="btn btn-sm btn-success fw-bold shadow-sm">
+                <i class="bi bi-plus-lg"></i> Yeni Pet Ekle
+                </a>
+            </div>
+
+            @if (Model?.Pets == null || !Model.Pets.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-search-heart fs-1 d-block mb-3 text-success opacity-50"></i>
+                    <h6 class="fw-bold">Bu müşteriye ait kayıtlı hasta bulunamadı.</h6>
+                    <p class="small">Üstteki butonu kullanarak müşterinin ilk petini sisteme ekleyin.</p>
+                </div>
+            }
+           else
+            {
+                <div class="row">
+                    @foreach (var pet in Model.Pets!)
+                    {
+                        var avatar = "🐾";
+                        if (!string.IsNullOrEmpty(pet.Species)) {
+                            var speciesLower = pet.Species.ToLower();
+                            if (speciesLower.Contains("kedi")) avatar = "🐱";
+                            else if (speciesLower.Contains("köpek")) avatar = "🐶";
+                            else if (speciesLower.Contains("kuş")) avatar = "🐦";
+                            else if (speciesLower.Contains("egzotik")) avatar = "🦎";
+                        }
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-light border-start border-success border-4">
+                                <div class="card-body d-flex align-items-center p-3">
+                                    <div class="fs-1 me-3">@avatar</div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="fw-bold mb-0 text-dark">@pet.Name</h5>
+                                        <p class="text-muted small mb-1">
+                                            @pet.Species - @(string.IsNullOrEmpty(pet.Breed) ? "Irk Belirtilmemiş" : pet.Breed)
+                                        </p>
+                                        <div>
+                                            <span class="badge bg-white text-dark border shadow-sm">
+                                                @(pet.Weight != null ? pet.Weight + " kg" : "Kilo Yok")
+                                            </span>
+                                            <span class="badge bg-white text-dark border shadow-sm">
+                                                <i class="bi bi-gender-ambiguous"></i> @(string.IsNullOrEmpty(pet.Gender) ? "-" : pet.Gender)
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                      <a asp-controller="MedicalRecords" asp-action="Index" asp-route-petId="@pet.Id" class="btn btn-sm btn-success rounded-circle shadow-sm" title="Tıbbi Dosyayı Aç" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                                      <i class="bi bi-journal-medical"></i>
+                                      </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model?.DebtBalance > 0)
+{
+    <div class="modal fade" id="tahsilatModal" tabindex="-1" aria-labelledby="tahsilatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="tahsilatModalLabel"><i class="bi bi-cash-coin me-2"></i> Kasa Tahsilat İşlemi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <form asp-action="ReceivePayment" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    
+                    <div class="modal-body p-4">
+                        <div class="alert alert-warning text-center border-0 shadow-sm mb-4">
+                            <small class="fw-bold text-dark d-block">Müşterinin Toplam Borcu</small>
+                            <h3 class="fw-bold text-danger mb-0">@Model.DebtBalance.ToString("C")</h3>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Alınan Tutar</label>
+                            <div class="input-group input-group-lg shadow-sm">
+                                <span class="input-group-text bg-white border-success text-success fw-bold">₺</span>
+                                <input type="number" name="amount" class="form-control border-success shadow-none bg-light" step="0.01" min="0.1" placeholder="Müşteriden alınan rakamı girin..." required />
+                            </div>
+                            <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle"></i> Girdiğiniz tutar, müşterinin toplam borcundan otomatik olarak düşülecektir.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer bg-light rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary fw-bold px-4 rounded-pill" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm rounded-pill"><i class="bi bi-check-lg me-1"></i> Tahsilatı Onayla</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,159 @@
+@model IEnumerable<VetPanelPremium.Models.MedicalRecord>
+@{ 
+    ViewData["Title"] = "Tıbbi Dosya"; 
+    var pet = ViewBag.PetInfo as VetPanelPremium.Models.Pet;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-journal-medical text-primary me-2"></i> Tıbbi Dosya: @pet?.Name</h2>
+    <div>
+        <a asp-controller="Owners" asp-action="Details" asp-route-id="@pet?.OwnerId" class="btn btn-outline-secondary fw-bold rounded-pill me-2">
+            <i class="bi bi-person me-1"></i> Sahibine Dön
+        </a>
+        <a asp-action="Create" asp-route-petId="@pet?.Id" class="btn btn-primary fw-bold shadow-sm rounded-pill">
+            <i class="bi bi-plus-lg me-1"></i> Yeni Muayene Ekle
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="premium-card p-4 border-top border-primary border-4 text-center h-100 mb-4 shadow-sm">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-suit-heart-fill fs-1"></i>
+            </div>
+            <h4 class="fw-bold text-dark">@pet?.Name</h4>
+            <p class="text-muted mb-3">@pet?.Species - @pet?.Breed</p>
+            
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                <span class="badge bg-light text-dark border shadow-sm px-3 py-2"><i class="bi bi-gender-ambiguous"></i> @pet?.Gender</span>
+                <span class="badge bg-light text-dark border shadow-sm px-3 py-2"><i class="bi bi-calendar3"></i> @pet?.BirthDate?.ToString("yyyy") Doğumlu</span>
+            </div>
+            <div class="alert alert-info text-start shadow-sm border-0 mb-0 mt-3">
+                <h6 class="fw-bold mb-1"><i class="bi bi-person-vcard"></i> Sahibi</h6>
+                <div class="d-flex justify-content-between">
+                    <span>@pet?.Owner?.FullName</span>
+                    <a href="tel:@pet?.Owner?.PhoneNumber" class="text-decoration-none fw-bold">@pet?.Owner?.PhoneNumber</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="premium-card p-4 border-top border-success border-4 h-100 shadow-sm">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up-arrow text-success me-2"></i> Kilo Gelişim Analizi (Kg)</h5>
+            
+            @if (ViewBag.ChartLabels != null && ((string[])ViewBag.ChartLabels).Length > 0)
+            {
+                <div style="height: 250px; width: 100%;">
+                    <canvas id="weightChart"></canvas>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-bar-chart fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                    Yeterli kilo verisi yok. Yeni muayenelerde kilo girdikçe grafik oluşacaktır.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="premium-card p-4 border-top border-primary border-4 shadow-sm">
+            <h5 class="fw-bold text-dark mb-4"><i class="bi bi-clipboard2-pulse text-primary me-2"></i> Geçmiş Muayene ve İşlemler</h5>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-file-medical fs-1 d-block mb-3 text-secondary opacity-50"></i>
+                    Bu hastaya ait geçmiş tıbbi kayıt bulunmuyor.
+                </div>
+            }
+            else
+            {
+                <div class="timeline-container">
+                    @foreach (var record in Model)
+                    {
+                        <div class="card border-0 bg-light mb-3 shadow-sm rounded-4 border-start border-primary border-4">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                    <h6 class="fw-bold text-primary mb-0"><i class="bi bi-calendar2-check"></i> @record.VisitDate.ToString("dd MMMM yyyy, HH:mm")</h6>
+                                    @if(record.Weight.HasValue)
+                                    {
+                                        <span class="badge bg-white text-dark border shadow-sm px-2 py-1"><i class="bi bi-speedometer2 text-success"></i> @record.Weight kg</span>
+                                    }
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <small class="text-muted d-block mb-1 text-uppercase fw-bold">Şikayet / Anamnez</small>
+                                        <p class="mb-0 text-dark">@(string.IsNullOrEmpty(record.Complaint) ? "Belirtilmedi" : record.Complaint)</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <small class="text-muted d-block mb-1 text-uppercase fw-bold">Kesin Teşhis</small>
+                                        <p class="mb-0 text-dark fw-bold">@record.Diagnosis</p>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <small class="text-muted d-block mb-1 text-uppercase fw-bold">Uygulanan Tedavi / Reçete</small>
+                                        <div class="p-3 bg-white border rounded shadow-sm">
+                                            @(string.IsNullOrEmpty(record.Treatment) ? "Herhangi bir tedavi/ürün girilmedi." : record.Treatment)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var chartLabels = @Html.Raw(Json.Serialize(ViewBag.ChartLabels));
+            var chartData = @Html.Raw(Json.Serialize(ViewBag.ChartData));
+
+            if (chartLabels && chartLabels.length > 0) {
+                var ctx = document.getElementById('weightChart').getContext('2d');
+                var weightChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Kilo (kg)',
+                            data: chartData,
+                            backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                            borderColor: 'rgba(25, 135, 84, 1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: 'rgba(25, 135, 84, 1)',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: { display: true, text: 'Ağırlık (Kg)' }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,100 @@
+@model VetPanelPremium.Models.Pet
+@{ ViewData["Title"] = "Hasta Düzenle"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-pencil-square text-warning me-2"></i> Hasta Bilgilerini Düzenle</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Listeye Dön
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="premium-card p-5 border-top border-warning border-4">
+            
+            <form asp-action="Edit" enctype="multipart/form-data">
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="TahlilDosyaYolu" /> <div class="mb-4 p-3 bg-light rounded-3 border border-warning border-opacity-25">
+                    <label asp-for="OwnerId" class="form-label fw-bold text-dark">
+                        <i class="bi bi-person-fill text-primary"></i> Hasta Sahibi (Müşteri) <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="OwnerId" class="form-select form-select-lg border-0 shadow-sm" asp-items="ViewBag.OwnerId" required></select>
+                    <span asp-validation-for="OwnerId" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label fw-bold text-secondary">Pet Adı *</label>
+                        <input asp-for="Name" class="form-control form-control-lg bg-light border-0 shadow-none" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Species" class="form-label fw-bold text-secondary">Türü *</label>
+                        <select asp-for="Species" class="form-select form-select-lg bg-light border-0 shadow-none" required>
+                            <option value="Kedi">🐱 Kedi</option>
+                            <option value="Köpek">🐶 Köpek</option>
+                            <option value="Kuş">🐦 Kuş</option>
+                            <option value="Egzotik">🦎 Egzotik</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Breed" class="form-label fw-bold text-secondary">Irkı</label>
+                        <input asp-for="Breed" class="form-control bg-light border-0 shadow-none" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label fw-bold text-secondary">Cinsiyet</label>
+                        <select asp-for="Gender" class="form-select bg-light border-0 shadow-none">
+                            <option value="Erkek">Erkek</option>
+                            <option value="Dişi">Dişi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label asp-for="Weight" class="form-label fw-bold text-secondary">Kilo</label>
+                        <input asp-for="Weight" type="number" step="0.1" class="form-control bg-light border-0 shadow-none" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="BirthDate" class="form-label fw-bold text-secondary">Doğum Tarihi</label>
+                        <input asp-for="BirthDate" type="date" class="form-control bg-light border-0 shadow-none" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ChipNumber" class="form-label fw-bold text-secondary">Mikroçip No</label>
+                        <input asp-for="ChipNumber" class="form-control bg-light border-0 shadow-none" />
+                    </div>
+                </div>
+
+                <div class="mb-5 p-3 border border-2 border-dashed rounded bg-light">
+                    @if (!string.IsNullOrEmpty(Model.TahlilDosyaYolu))
+                    {
+                        <div class="mb-3 p-2 bg-info bg-opacity-10 rounded border border-info">
+                            <i class="bi bi-check-circle-fill text-success"></i> <strong>Sistemde Kayıtlı Tahlil Var:</strong> 
+                            <a href="@Model.TahlilDosyaYolu" target="_blank" class="ms-2 fw-bold text-primary">Mevcut Dosyayı Görüntüle</a>
+                        </div>
+                    }
+                    
+                    <label asp-for="TahlilDosyasi" class="form-label fw-bold text-primary">
+                        <i class="bi bi-file-earmark-arrow-up"></i> Yeni Tahlil/Röntgen Yükle (Eskisinin Üzerine Yazar)
+                    </label>
+                    <input asp-for="TahlilDosyasi" type="file" class="form-control shadow-none" accept=".pdf,.jpg,.jpeg,.png" />
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning btn-lg fw-bold shadow-sm rounded-pill text-dark">
+                        <i class="bi bi-save-fill me-2"></i> Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

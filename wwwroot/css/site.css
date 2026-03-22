@@ -1,0 +1,87 @@
+/* VETPANEL PREMIUM - MASTER CSS */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f4f7fa; /* Göz yormayan açık gri/mavi zemin */
+    overflow-x: hidden;
+}
+
+/* --- SOL MENÜ (SIDEBAR) --- */
+#sidebar {
+    min-width: 260px;
+    max-width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #ffffff;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.03);
+    z-index: 1000;
+    transition: all 0.3s;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #0d6efd; /* Medikal Mavisi */
+    color: white;
+    text-align: center;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+}
+
+#sidebar ul li a {
+    padding: 15px 25px;
+    font-size: 1.1em;
+    display: block;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+}
+
+#sidebar ul li a:hover, #sidebar ul li.active > a {
+    color: #0d6efd;
+    background: #f8f9fa;
+    border-left: 4px solid #0d6efd;
+}
+
+#sidebar ul li a i {
+    margin-right: 15px;
+    font-size: 1.2em;
+}
+
+/* --- ANA İÇERİK ALANI --- */
+#content {
+    width: calc(100% - 260px);
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+/* Üst Bar (Topbar) */
+.topbar {
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-body {
+    padding: 30px;
+}
+
+/* Gölgeli Şık Kartlar */
+.premium-card {
+    background: #fff;
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}

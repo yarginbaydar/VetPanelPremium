@@ -1,0 +1,197 @@
+@{ ViewData["Title"] = "Gelişmiş Kasa (POS)"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-cart4 text-success me-2"></i> Hızlı Satış ve Kasa</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-receipt me-1"></i> Fatura Geçmişi
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="premium-card p-4 border-top border-primary border-4 mb-4">
+            <h5 class="fw-bold text-primary mb-3"><i class="bi bi-box-seam"></i> Sepete Ürün Ekle</h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-secondary fw-bold">Ürün / Hizmet</label>
+                <select id="productSelect" class="form-select form-select-lg bg-light border-0 shadow-none">
+                    <option value="" data-price="0">-- Seçiniz --</option>
+                    @foreach(var item in ViewBag.ProductsList)
+                    {
+                        <option value="@item.Id" 
+                                data-name="@item.Name" 
+                                data-price="@item.SalePrice.ToString("F2").Replace(",", ".")"
+                                data-stock="@item.StockQuantity"
+                                data-category="@item.Category">
+                            @item.Name - @item.SalePrice.ToString("C") @(item.Category != "Hizmet" && item.Category != "Aşı" ? $"(Stok: {item.StockQuantity})" : "")
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-secondary fw-bold">Adet</label>
+                <input type="number" id="qtyInput" class="form-control form-control-lg bg-light border-0 shadow-none" value="1" min="1" />
+            </div>
+
+            <button type="button" onclick="addToCart()" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Sepete At
+            </button>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="premium-card p-4 border-top border-success border-4">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-basket2"></i> Müşteri Sepeti</h5>
+            
+            <div class="table-responsive mb-4" style="min-height: 150px;">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Adet</th>
+                            <th>Birim Fiyat</th>
+                            <th>Toplam</th>
+                            <th>Sil</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartTableBody">
+                        <tr><td colspan="5" class="text-center text-muted">Sepet şu an boş.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-light p-4 rounded-4 border border-success border-opacity-25">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-success pb-3">
+                    <h4 class="fw-bold text-dark mb-0">Genel Toplam:</h4>
+                    <h2 class="fw-bold text-success mb-0" id="grandTotal">0.00 ₺</h2>
+                </div>
+
+                <form asp-action="Checkout" method="post" id="checkoutForm">
+                    <div id="hiddenCartInputs"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-secondary">Müşteri Seçimi (Opsiyonel)</label>
+                            <select name="ownerId" class="form-select shadow-sm" asp-items="ViewBag.Owners">
+                                <option value="">-- Kayıtsız (Dışarıdan) --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-secondary">Ödeme Yöntemi</label>
+                            <select name="paymentMethod" class="form-select shadow-sm border-start border-success border-4" required>
+                                <option value="Nakit">💵 Nakit</option>
+                                <option value="Kredi Kartı">💳 Kredi Kartı</option>
+                                <option value="Veresiye">📒 Veresiye (Cari Hesap)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow text-uppercase mt-2">
+                        <i class="bi bi-check2-all me-2"></i> Faturayı Kes ve Tahsil Et
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let cart = [];
+
+        // 1. Ürünü Sepete At (STOK KONTROLLÜ)
+        function addToCart() {
+            const select = document.getElementById('productSelect');
+            const qty = parseInt(document.getElementById('qtyInput').value);
+            
+            if(!select.value) {
+                alert("Lütfen önce bir ürün seçin!");
+                return;
+            }
+
+            const option = select.options[select.selectedIndex];
+            const id = option.value;
+            const name = option.getAttribute('data-name');
+            const price = parseFloat(option.getAttribute('data-price'));
+            const stock = parseInt(option.getAttribute('data-stock')); // 🛡️ Stoğu çektik
+            const category = option.getAttribute('data-category');
+
+            // Sepette bu üründen zaten kaç tane var?
+            let currentQtyInCart = 0;
+            const existingItem = cart.find(x => x.id === id);
+            if(existingItem) {
+                currentQtyInCart = existingItem.qty;
+            }
+
+            // 🛑 STOK DUVARI: Hizmet değilse ve sınır aşılıyorsa DURDUR!
+            if (category !== "Hizmet" && category !== "Aşı") {
+                if ((currentQtyInCart + qty) > stock) {
+                    alert(`⚠️ STOK YETERSİZ!\n\n${name} ürününden depoda sadece ${stock} adet var.\nSepete daha fazla ekleyemezsiniz.`);
+                    return; // İşlemi kes!
+                }
+            }
+
+            // Sorun yoksa sepete ekle
+            if(existingItem) {
+                existingItem.qty += qty; 
+            } else {
+                cart.push({ id: id, name: name, price: price, qty: qty }); 
+            }
+
+            document.getElementById('qtyInput').value = 1;
+            select.selectedIndex = 0;
+            updateCartUI();
+        }
+
+        // 2. Sepet Ekranını ve Gizli Formları Güncelle
+        function updateCartUI() {
+            const tbody = document.getElementById('cartTableBody');
+            const hiddenDiv = document.getElementById('hiddenCartInputs');
+            
+            tbody.innerHTML = '';
+            hiddenDiv.innerHTML = '';
+            let total = 0;
+
+            if(cart.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Sepet şu an boş.</td></tr>';
+                document.getElementById('grandTotal').innerText = "0.00 ₺";
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                const lineTotal = item.price * item.qty;
+                total += lineTotal;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${item.name}</td>
+                        <td><span class="badge bg-secondary">${item.qty} Adet</span></td>
+                        <td>${item.price.toFixed(2)} ₺</td>
+                        <td class="text-success fw-bold">${lineTotal.toFixed(2)} ₺</td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${index})"><i class="bi bi-trash"></i></button></td>
+                    </tr>`;
+
+                hiddenDiv.innerHTML += `<input type="hidden" name="productIds" value="${item.id}" />`;
+                hiddenDiv.innerHTML += `<input type="hidden" name="quantities" value="${item.qty}" />`;
+            });
+
+            document.getElementById('grandTotal').innerText = total.toFixed(2) + " ₺";
+        }
+
+        // 3. Sepetten Ürün Çıkar
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        // 4. Boş Sepetle Tahsilatı Engelle
+        document.getElementById('checkoutForm').onsubmit = function(e) {
+            if(cart.length === 0) {
+                alert('⚠️ HATA: Sepet boş! Lütfen tahsilat yapmadan önce sepete ürün ekleyin.');
+                e.preventDefault();
+            }
+        };
+    </script>
+}

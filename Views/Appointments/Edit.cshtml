@@ -1,0 +1,114 @@
+@model VetPanelPremium.Models.Appointment
+@{ ViewData["Title"] = "Randevu Düzenle / Ertele"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-pencil-square text-warning me-2"></i> Randevu Düzenle</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Takvime Dön
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="premium-card p-4 border-top border-warning border-4 shadow-sm">
+            
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm rounded-3"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="OwnerId" class="form-label fw-bold text-secondary">Müşteri</label>
+                        <select asp-for="OwnerId" class="form-select bg-light shadow-sm" asp-items="ViewBag.Owners" id="OwnerSelect"></select>
+                        <span asp-validation-for="OwnerId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PetId" class="form-label fw-bold text-secondary">Hasta (Pet)</label>
+                        <select asp-for="PetId" class="form-select bg-light shadow-sm" asp-items="ViewBag.Pets" id="PetSelect">
+                            <option value="">-- Hasta Seçin (Opsiyonel) --</option>
+                        </select>
+                        <span asp-validation-for="PetId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="AppointmentDate" class="form-label fw-bold text-secondary">Randevu Tarihi & Saati <span class="text-danger">*</span></label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-warning text-dark border-warning"><i class="bi bi-calendar-event"></i></span>
+                            <input asp-for="AppointmentDate" type="datetime-local" class="form-control border-warning" required />
+                        </div>
+                        <span asp-validation-for="AppointmentDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="Status" class="form-label fw-bold text-secondary">Durum</label>
+                        <select asp-for="Status" class="form-select shadow-sm">
+                            <option value="Bekliyor">⏳ Bekliyor</option>
+                            <option value="Tamamlandı">✅ Tamamlandı</option>
+                            <option value="İptal Edildi">❌ İptal Edildi</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <label asp-for="Reason" class="form-label fw-bold text-secondary">Ziyaret Sebebi <span class="text-danger">*</span></label>
+                        <input asp-for="Reason" class="form-control shadow-sm" placeholder="Örn: Aşı, Kontrol, Tıraş vb." required />
+                        <span asp-validation-for="Reason" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <label asp-for="Notes" class="form-label fw-bold text-secondary">Ekstra Notlar</label>
+                        <textarea asp-for="Notes" class="form-control shadow-sm" rows="3" placeholder="Randevu ile ilgili doktor veya asistan notları..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-4">
+                    <button type="submit" class="btn btn-warning fw-bold text-dark px-5 shadow-sm rounded-pill">
+                        <i class="bi bi-save me-1"></i> Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            // Müşteri seçimi değiştirildiğinde çalışır
+            $('#OwnerSelect').change(function () {
+                var selectedOwnerId = $(this).val(); 
+                var petSelect = $('#PetSelect');     
+
+                petSelect.empty();
+                
+                if (selectedOwnerId) {
+                    petSelect.append('<option value="">⏳ Hayvanlar yükleniyor...</option>');
+
+                    // Arka planda sessizce API'ye git ve yeni müşterinin hayvanlarını getir
+                    $.getJSON('/Appointments/GetPetsByOwner', { ownerId: selectedOwnerId }, function (data) {
+                        petSelect.empty(); 
+                        
+                        if (data.length > 0) {
+                            petSelect.append('<option value="">-- Hasta Seçin (Opsiyonel) --</option>');
+                            $.each(data, function (index, item) {
+                                petSelect.append($('<option/>', {
+                                    value: item.value,
+                                    text: item.text
+                                }));
+                            });
+                        } else {
+                            petSelect.append('<option value="">Bu müşteriye kayıtlı hasta yok</option>');
+                        }
+                    });
+                } else {
+                    petSelect.append('<option value="">-- Önce Müşteri Seçin --</option>');
+                }
+            });
+        });
+    </script>
+}

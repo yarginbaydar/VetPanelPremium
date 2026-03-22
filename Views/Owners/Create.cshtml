@@ -1,0 +1,64 @@
+@model VetPanelPremium.Models.Owner
+@{ ViewData["Title"] = "Yeni Müşteri Ekle"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-person-plus text-primary me-2"></i> Yeni Müşteri Ekle</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Portföye Dön
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="premium-card p-5 border-top border-primary border-4">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-person-badge"></i> Ad Soyad <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="FullName" class="form-control form-control-lg bg-light border-0 shadow-none" placeholder="Örn: Yargın Hocam" required />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-telephone"></i> Telefon Numarası <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="PhoneNumber" class="form-control form-control-lg bg-light border-0 shadow-none" placeholder="05XX XXX XX XX" required />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label asp-for="IdentityNumber" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-credit-card-2-front"></i> TC Kimlik / Vergi No <small class="text-muted">(Opsiyonel, Fatura İçin)</small>
+                        </label>
+                        <input asp-for="IdentityNumber" class="form-control form-control-lg bg-light border-0 shadow-none" placeholder="11 Haneli TC Kimlik Numarası" />
+                        <span asp-validation-for="IdentityNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label asp-for="Address" class="form-label fw-bold text-secondary">
+                        <i class="bi bi-geo-alt"></i> Açık Adres <small class="text-muted">(Opsiyonel)</small>
+                    </label>
+                    <textarea asp-for="Address" class="form-control bg-light border-0 shadow-none" rows="3" placeholder="Mahalle, Sokak, Kapı No..."></textarea>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill">
+                        <i class="bi bi-save me-2"></i> Müşteriyi Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

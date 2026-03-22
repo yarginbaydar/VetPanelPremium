@@ -1,0 +1,121 @@
+@model IEnumerable<VetPanelPremium.Models.Appointment>
+@{ ViewData["Title"] = "Tüm Takvim"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-calendar-week text-primary me-2"></i> Randevu Takvimi</h2>
+    <a asp-action="Create" class="btn btn-primary fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-plus-lg me-1"></i> Yeni Randevu Ekle
+    </a>
+</div>
+
+<div class="premium-card p-4 border-top border-primary border-4 shadow-sm">
+    <div class="table-responsive">
+        
+        <table class="table table-hover align-middle premium-datatable">
+            <thead class="table-light">
+                <tr>
+                    <th>Tarih & Saat</th>
+                    <th>Müşteri</th>
+                    <th>Hasta (Pet)</th>
+                    <th>Sebep</th>
+                    <th>Durum</th>
+                    <th class="text-end">İşlemler Paneli</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var ownerPhone = item.Owner?.PhoneNumber;
+                    var waPhoneStr = "";
+                    var waMessage = "";
+                    var isPhoneValid = !string.IsNullOrEmpty(ownerPhone) && ownerPhone != null;
+
+                    if (isPhoneValid)
+                    {
+                        waMessage = $"Merhaba {item.Owner?.FullName}, {item.AppointmentDate.ToString("dd MMMM yyyy HH:mm")} tarihindeki randevunuzu hatırlatmak isteriz. Kliniğimizde görüşmek üzere!";
+                        waPhoneStr = ownerPhone!.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "");
+                        if (!waPhoneStr.StartsWith("+90") && !waPhoneStr.StartsWith("90")) 
+                        { 
+                            waPhoneStr = "+90" + (waPhoneStr.StartsWith("0") ? waPhoneStr.Substring(1) : waPhoneStr); 
+                        }
+                    }
+
+                    <tr>
+                        <td class="fw-bold text-primary">@item.AppointmentDate.ToString("dd MMM yyyy HH:mm")</td>
+                        <td class="fw-bold">@item.Owner?.FullName</td>
+                        <td>
+                            @if(item.Pet != null)
+                            {
+                                @item.Pet.Name
+                            }
+                            else
+                            {
+                                <span class="text-muted small fst-italic">Hasta Yok</span>
+                            }
+                        </td>
+                        <td><span class="text-secondary"><i class="bi bi-clipboard-pulse"></i> @item.Reason</span></td>
+                        <td>
+                            @if (item.Status == "Bekliyor") 
+                            { 
+                                <span class="badge bg-warning text-dark"><i class="bi bi-hourglass"></i> Bekliyor</span> 
+                            }
+                            else if (item.Status == "Tamamlandı") 
+                            { 
+                                <span class="badge bg-success"><i class="bi bi-check-lg"></i> Tamamlandı</span> 
+                            }
+                            else 
+                            { 
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> İptal Edildi</span> 
+                            }
+                        </td>
+                        <td class="text-end text-nowrap">
+                            @if (item.Status == "Bekliyor")
+                            {
+                                @if (item.Pet != null)
+                                {
+                                    <a asp-controller="MedicalRecords" asp-action="Index" asp-route-petId="@item.PetId" class="btn btn-sm btn-primary shadow-sm me-1" title="Muayeneye Başla (Tıbbi Dosya)">
+                                        <i class="bi bi-journal-medical"></i>
+                                    </a>
+                                }
+
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning shadow-sm me-1" title="Düzenle / Ertele">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                @if (isPhoneValid)
+                                {
+                                    <a href="https://wa.me/@waPhoneStr?text=@Uri.EscapeDataString(waMessage)" target="_blank" class="btn btn-sm btn-success shadow-sm me-1" title="WhatsApp ile Hatırlat">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-secondary shadow-sm me-1 opacity-50" title="Telefon No Kayıtlı Değil" disabled>
+                                        <i class="bi bi-whatsapp"></i>
+                                    </button>
+                                }
+
+                                <form asp-action="Complete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success shadow-sm me-1" title="Tamamlandı İşaretle"><i class="bi bi-check-lg"></i></button>
+                                </form>
+
+                                <form asp-action="Cancel" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm" title="İptal Et"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                            }
+                            else if (item.Status == "Tamamlandı")
+                            {
+                                @if (item.Pet != null)
+                                {
+                                    <a asp-controller="MedicalRecords" asp-action="Index" asp-route-petId="@item.PetId" class="btn btn-sm btn-outline-primary shadow-sm" title="Tıbbi Dosyayı İncele">
+                                        <i class="bi bi-folder2-open"></i> Dosyayı Aç
+                                    </a>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

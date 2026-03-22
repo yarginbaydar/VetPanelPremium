@@ -1,0 +1,155 @@
+@model IEnumerable<VetPanelPremium.Models.Product>
+@{ ViewData["Title"] = "Stok ve Hizmet Yönetimi"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-box-seam text-primary me-2"></i> Stok ve Hizmet Yönetimi</h2>
+    <a asp-action="Create" class="btn btn-primary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-plus-circle me-1"></i> Yeni Ürün/Hizmet Ekle
+    </a>
+</div>
+
+@if (ViewBag.ExpiredCount > 0 || ViewBag.ExpiringSoonCount > 0)
+{
+    <div class="row mb-4">
+        @if (ViewBag.ExpiredCount > 0)
+        {
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="premium-card p-3 border-start border-danger border-5 bg-danger bg-opacity-10 d-flex align-items-center h-100 shadow-sm">
+                    <i class="bi bi-exclamation-octagon-fill text-danger fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-danger mb-0">KRİTİK SKT ALARMI!</h5>
+                        <span class="text-dark">Depoda tarihi geçmiş <strong>@ViewBag.ExpiredCount</strong> adet ürün tespit edildi. Lütfen imha ediniz!</span>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (ViewBag.ExpiringSoonCount > 0)
+        {
+            <div class="col-md-6">
+                <div class="premium-card p-3 border-start border-warning border-5 bg-warning bg-opacity-10 d-flex align-items-center h-100 shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">YAKLAŞAN SKT UYARISI</h5>
+                        <span class="text-dark">Son kullanma tarihine 30 günden az kalan <strong>@ViewBag.ExpiringSoonCount</strong> adet ürün var. Öncelikli kullanın!</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="premium-card p-4 border-top border-primary border-4 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-secondary py-3">Ürün / Hizmet Adı</th>
+                    <th class="text-secondary py-3">Kategori</th>
+                    <th class="text-secondary py-3 text-center">Stok Durumu</th>
+                    <th class="text-secondary py-3 text-center">SKT Durumu</th> <th class="text-secondary py-3 text-end">Satış Fiyatı</th>
+                    <th class="text-secondary py-3 text-center">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-cart-x fs-1 d-block mb-3 text-primary opacity-50"></i>
+                            <h5 class="fw-bold">Depo Şu An Boş</h5>
+                            <p>Sağ üstteki butondan ilk ürününüzü ekleyin.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr class="border-bottom">
+                            <td class="fw-bold text-dark">
+                                @if(item.Category == "Mama") { <i class="bi bi-bag-heart text-warning me-2"></i> }
+                                else if(item.Category == "Hizmet" || item.Category == "Aşı") { <i class="bi bi-capsule text-success me-2"></i> }
+                                else { <i class="bi bi-box text-secondary me-2"></i> }
+                                @item.Name
+                                <br><small class="text-muted fw-normal"><i class="bi bi-upc-scan"></i> Barkod: @(string.IsNullOrEmpty(item.Barcode) ? "Yok" : item.Barcode)</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border shadow-sm">@item.Category</span></td>
+                            
+                            <td class="text-center">
+                                @if (item.Category == "Hizmet" || item.Category == "Aşı")
+                                {
+                                    <span class="text-muted small">- Sınırsız -</span>
+                                }
+                                else if (item.StockQuantity <= 5 && item.StockQuantity > 0)
+                                {
+                                    <span class="badge bg-warning text-dark border border-warning shadow-sm"><i class="bi bi-exclamation-triangle"></i> Kritik: @item.StockQuantity</span>
+                                }
+                                else if (item.StockQuantity == 0)
+                                {
+                                    <span class="badge bg-danger shadow-sm"><i class="bi bi-x-circle"></i> Tükendi</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 shadow-sm">@item.StockQuantity Adet</span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                @if (item.ExpirationDate.HasValue)
+                                {
+                                    var daysLeft = (item.ExpirationDate.Value.Date - DateTime.Today).Days;
+                                    
+                                    if (daysLeft < 0) // TARİHİ GEÇMİŞ
+                                    {
+                                        <span class="badge bg-danger shadow-sm px-2 py-1"><i class="bi bi-calendar-x"></i> @item.ExpirationDate.Value.ToString("dd MMM yyyy") <br> (Geçti!)</span>
+                                    }
+                                    else if (daysLeft <= 30) // 30 GÜNDEN AZ KALDI
+                                    {
+                                        <span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1"><i class="bi bi-calendar-exclamation"></i> @item.ExpirationDate.Value.ToString("dd MMM yyyy") <br> (Son @daysLeft Gün)</span>
+                                    }
+                                    else // TARİHİ UZAK, SORUN YOK
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 shadow-sm px-2 py-1"><i class="bi bi-calendar-check"></i> @item.ExpirationDate.Value.ToString("dd MMM yyyy")</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">-</span>
+                                }
+                            </td>
+                            
+                            <td class="text-end fw-bold text-success fs-5">@item.SalePrice.ToString("C")</td>
+                            
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    
+                                    @if (item.Category != "Hizmet" && item.Category != "Aşı")
+                                    {
+                                        <form asp-action="AddStock" method="post" class="d-flex mb-0" style="max-width: 130px;">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <div class="input-group input-group-sm shadow-sm">
+                                                <input type="number" name="addedStock" class="form-control text-center" placeholder="Adet" min="1" required>
+                                                <button type="submit" class="btn btn-success fw-bold" title="Stoğa Ekle"><i class="bi bi-plus-lg"></i></button>
+                                            </div>
+                                        </form>
+                                    }
+
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light text-warning border shadow-sm fw-bold" title="Düzenle">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="mb-0" onsubmit="return confirm('Bu ürünü silmek istediğinize emin misiniz? (Geçmiş faturalarda görünmeye devam edecektir)');">
+                                        <button type="submit" class="btn btn-sm btn-light text-danger border shadow-sm fw-bold" title="Arşive Kaldır">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

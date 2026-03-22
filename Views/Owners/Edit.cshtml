@@ -1,0 +1,68 @@
+@model VetPanelPremium.Models.Owner
+@{ ViewData["Title"] = "Müşteri Düzenle"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-pencil-square text-warning me-2"></i> Müşteri Bilgilerini Güncelle</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Vazgeç ve Dön
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="premium-card p-5 border-top border-warning border-4">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="DebtBalance" />
+                <input type="hidden" asp-for="RegisteredDate" />
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-person-badge"></i> Ad Soyad <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="FullName" class="form-control form-control-lg bg-light border-0 shadow-none" required />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-telephone"></i> Telefon Numarası <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="PhoneNumber" class="form-control form-control-lg bg-light border-0 shadow-none" required />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label asp-for="IdentityNumber" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-credit-card-2-front"></i> TC Kimlik / Vergi No
+                        </label>
+                        <input asp-for="IdentityNumber" class="form-control form-control-lg bg-light border-0 shadow-none" />
+                        <span asp-validation-for="IdentityNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label asp-for="Address" class="form-label fw-bold text-secondary">
+                        <i class="bi bi-geo-alt"></i> Açık Adres
+                    </label>
+                    <textarea asp-for="Address" class="form-control bg-light border-0 shadow-none" rows="3"></textarea>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning btn-lg fw-bold shadow-sm rounded-pill text-dark">
+                        <i class="bi bi-check-circle me-2"></i> Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

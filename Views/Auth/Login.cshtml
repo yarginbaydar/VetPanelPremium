@@ -1,0 +1,68 @@
+@{
+    Layout = null; // DİKKAT: Ana şablonu (sol menüyü falan) iptal ettik! Sadece bu kutu görünecek.
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sisteme Giriş - VetPanel Premium</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { 
+            background-color: #f0f2f5; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+        .login-card { 
+            width: 100%; 
+            max-width: 420px; 
+            border-radius: 1.5rem; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            border-top: 6px solid #0d6efd; 
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card bg-white p-5">
+        <div class="text-center mb-4">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-hospital fs-1"></i>
+            </div>
+            <h3 class="fw-bold text-dark">VetPanel Premium</h3>
+            <p class="text-muted small">Lütfen yetkili personel girişi yapın.</p>
+        </div>
+        
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger text-center shadow-sm py-2 mb-4">
+                <i class="bi bi-shield-x me-1"></i> <strong>Erişim Reddedildi:</strong> <br/> @ViewBag.Error
+            </div>
+        }
+
+        <form asp-action="Login" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary small text-uppercase">Kullanıcı Adı</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-person-fill"></i></span>
+                    <input type="text" name="username" class="form-control bg-light border-0 shadow-none fs-6" required placeholder="admin" autocomplete="off" />
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold text-secondary small text-uppercase">Parola</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" name="password" class="form-control bg-light border-0 shadow-none fs-6" required placeholder="••••••" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow">
+                Sisteme Giriş Yap <i class="bi bi-box-arrow-in-right ms-1"></i>
+            </button>
+        </form>
+    </div>
+</body>
+</html>

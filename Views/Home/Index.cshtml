@@ -1,0 +1,327 @@
+﻿@model VetPanelPremium.Models.DashboardViewModel
+@{ ViewData["Title"] = "Ana Sayfa - Komuta Merkezi"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-grid-1x2-fill text-primary me-2"></i> Dashboard</h2>
+        <p class="text-muted small mt-1">VetPanel Premium Sistem Özeti - @DateTime.Now.ToString("dd MMMM yyyy, dddd")</p>
+    </div>
+</div>
+
+@if (ViewBag.ExpiredCount > 0 || ViewBag.ExpiringSoonCount > 0)
+{
+    <div class="row mb-4">
+        @if (ViewBag.ExpiredCount > 0)
+        {
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="premium-card p-3 border-start border-danger border-5 bg-danger bg-opacity-10 d-flex align-items-center h-100 shadow-sm">
+                    <i class="bi bi-exclamation-octagon-fill text-danger fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-danger mb-0">KRİTİK SKT ALARMI!</h5>
+                        <span class="text-dark">Depoda tarihi geçmiş <strong>@ViewBag.ExpiredCount</strong> ürün var. <a asp-controller="Products" asp-action="Index" class="fw-bold text-danger">Depoya Git</a></span>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (ViewBag.ExpiringSoonCount > 0)
+        {
+            <div class="col-md-6">
+                <div class="premium-card p-3 border-start border-warning border-5 bg-warning bg-opacity-10 d-flex align-items-center h-100 shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">YAKLAŞAN SKT UYARISI</h5>
+                        <span class="text-dark">Son kullanma tarihine 30 günden az kalan <strong>@ViewBag.ExpiringSoonCount</strong> ürün var.</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="premium-card p-4 border-start border-primary border-5 h-100 shadow-sm d-flex justify-content-between align-items-center">
+            <div>
+                <p class="text-muted fw-bold mb-1 small text-uppercase">Bugünkü Randevular</p>
+                <h2 class="fw-bold text-dark mb-0">@Model.TodayAppointmentsCount</h2>
+            </div>
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3">
+                <i class="bi bi-calendar-day fs-3"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="premium-card p-4 border-start border-success border-5 h-100 shadow-sm d-flex justify-content-between align-items-center">
+            <div>
+                <p class="text-muted fw-bold mb-1 small text-uppercase">Kayıtlı Hastalar</p>
+                <h2 class="fw-bold text-dark mb-0">@Model.TotalPets</h2>
+            </div>
+            <div class="bg-success bg-opacity-10 text-success rounded-circle p-3">
+                <i class="bi bi-box2-heart fs-3"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="premium-card p-4 border-start border-warning border-5 h-100 shadow-sm d-flex justify-content-between align-items-center">
+            <div>
+                <p class="text-muted fw-bold mb-1 small text-uppercase">Kritik Stok Uyarıları</p>
+                <h2 class="fw-bold text-dark mb-0">@Model.CriticalStockCount</h2>
+            </div>
+            <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3">
+                <i class="bi bi-exclamation-triangle fs-3"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="premium-card p-4 border-start border-danger border-5 h-100 shadow-sm d-flex justify-content-between align-items-center">
+            <div>
+                <p class="text-muted fw-bold mb-1 small text-uppercase">Bekleyen Alacaklar</p>
+                <h3 class="fw-bold text-danger mb-0">@Model.TotalUnpaidDebt.ToString("C")</h3>
+            </div>
+            <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-3">
+                <i class="bi bi-wallet2 fs-3"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-7 mb-4">
+        <div class="premium-card p-4 h-100 border-top border-primary border-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-primary me-2"></i> Bugünün Gündemi</h5>
+                <a asp-controller="Appointments" asp-action="Index" class="btn btn-sm btn-outline-primary fw-bold rounded-pill">Tüm Takvim</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <tbody>
+                        @if (!Model.TodayAppointments.Any())
+                        {
+                            <tr>
+                                <td class="text-center py-4 text-muted">
+                                    <i class="bi bi-cup-hot fs-3 d-block mb-2 text-secondary opacity-50"></i>
+                                    Bugün için planlı randevunuz bulunmuyor.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.TodayAppointments)
+                            {
+                                // 🚀 C# MANTIK İŞLEMLERİ (NULL HATASI ÖNLEMLERİ)
+                                var todayPhone = item.Owner?.PhoneNumber;
+                                var waPhoneStr = "";
+                                var waMessage = "";
+                                var isPhoneValid = !string.IsNullOrEmpty(todayPhone) && todayPhone != null;
+
+                                if (isPhoneValid)
+                                {
+                                    waMessage = $"Merhaba {item.Owner?.FullName}, bugün saat {item.AppointmentDate.ToString("HH:mm")}'de kliniğimizdeki randevunuzu hatırlatmak isteriz. Görüşmek üzere!";
+                                    waPhoneStr = todayPhone!.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "");
+                                    if (!waPhoneStr.StartsWith("+90") && !waPhoneStr.StartsWith("90")) 
+                                    { 
+                                        waPhoneStr = "+90" + (waPhoneStr.StartsWith("0") ? waPhoneStr.Substring(1) : waPhoneStr); 
+                                    }
+                                }
+
+                                <tr class="border-bottom">
+                                    <td class="fw-bold text-dark">
+                                        <div class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 fs-6">
+                                            @item.AppointmentDate.ToString("HH:mm")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">
+                                            @(item.Pet != null ? item.Pet.Name : "Hasta Yok") 
+                                            <span class="text-muted small">(@item.Owner?.FullName)</span>
+                                        </div>
+                                        <small class="text-secondary"><i class="bi bi-clipboard-pulse"></i> @item.Reason</small>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        @if (item.Status == "Bekliyor") 
+                                        { 
+                                            // 🚀 DÜZELTME 1: EĞER HASTA VARSA TIBBİ DOSYA BUTONU ÇIKSIN
+                                            if (item.Pet != null)
+                                            {
+                                                <a asp-controller="MedicalRecords" asp-action="Index" asp-route-petId="@item.PetId" class="btn btn-sm btn-primary shadow-sm me-1" title="Muayeneye Başla (Tıbbi Dosya)">
+                                                    <i class="bi bi-journal-medical"></i>
+                                                </a>
+                                            }
+
+                                            <a asp-controller="Appointments" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning shadow-sm me-1" title="Düzenle / Ertele">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+
+                                            if(isPhoneValid)
+                                            {
+                                                <a href="https://wa.me/@waPhoneStr?text=@Uri.EscapeDataString(waMessage)" target="_blank" class="btn btn-sm btn-success shadow-sm me-1" title="WhatsApp ile Hatırlat">
+                                                    <i class="bi bi-whatsapp"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-secondary shadow-sm me-1 opacity-50" title="Telefon No Kayıtlı Değil" disabled>
+                                                    <i class="bi bi-whatsapp"></i>
+                                                </button>
+                                            }
+                                            
+                                            <form asp-controller="Appointments" asp-action="Complete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success shadow-sm me-1" title="Tamamla"><i class="bi bi-check-lg"></i></button>
+                                            </form>
+                                            
+                                            <form asp-controller="Appointments" asp-action="Cancel" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm" title="İptal Et"><i class="bi bi-x-lg"></i></button>
+                                            </form>
+                                        }
+                                        else if (item.Status == "Tamamlandı") 
+                                        { 
+                                            if (item.Pet != null)
+                                            {
+                                                <a asp-controller="MedicalRecords" asp-action="Index" asp-route-petId="@item.PetId" class="btn btn-sm btn-outline-primary shadow-sm" title="Tıbbi Dosyayı İncele">
+                                                    <i class="bi bi-folder2-open"></i> Dosyayı Aç
+                                                </a>
+                                            }
+                                        }
+                                        else 
+                                        { 
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle"></i> İptal Edildi</span> 
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5 mb-4">
+        <div class="premium-card p-4 h-100 border-top border-warning border-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-box-seam text-warning me-2"></i> Tükenen Ürünler</h5>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill">Depoya Git</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <tbody>
+                        @if (!Model.CriticalProducts.Any())
+                        {
+                            <tr>
+                                <td class="text-center py-4 text-muted">
+                                    <i class="bi bi-check-circle fs-3 d-block mb-2 text-success opacity-50"></i>
+                                    Stok durumu gayet iyi. Kritik ürün yok.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.CriticalProducts)
+                            {
+                                <tr class="border-bottom">
+                                    <td class="fw-bold text-dark">
+                                        <i class="bi bi-box text-secondary me-2"></i> @item.Name
+                                    </td>
+                                    <td class="text-end">
+                                        @if (item.StockQuantity == 0)
+                                        {
+                                            <span class="badge bg-danger shadow-sm px-2 py-1">Tükendi (0)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1">Son @item.StockQuantity Adet</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="premium-card p-4 border-top border-success border-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-whatsapp text-success me-2"></i> Yarının Randevuları (WhatsApp Asistanı)</h5>
+                <small class="text-muted">Sistem otomatik olarak yarının randevularını tarar ve listeler.</small>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <tbody>
+                        @if (ViewBag.TomorrowAppointments == null || !((IEnumerable<VetPanelPremium.Models.Appointment>)ViewBag.TomorrowAppointments).Any())
+                        {
+                            <tr>
+                                <td class="text-center py-4 text-muted">
+                                    <i class="bi bi-check2-all fs-3 d-block mb-2 text-success opacity-50"></i>
+                                    Yarın için planlı randevu/hatırlatma bulunmuyor. Ekip dinlenebilir!
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in (IEnumerable<VetPanelPremium.Models.Appointment>)ViewBag.TomorrowAppointments)
+                            {
+                                // 🚀 YARININ RANDEVULARI İÇİN NULL GÜVENLİĞİ
+                                var tomorrowPhone = item.Owner?.PhoneNumber;
+                                var tMessage = "";
+                                var tPhoneStr = "";
+                                var isTPhoneValid = !string.IsNullOrEmpty(tomorrowPhone) && tomorrowPhone != null;
+
+                                if (isTPhoneValid)
+                                {
+                                    var petNameStr = item.Pet != null ? item.Pet.Name + " için" : "için";
+                                    tMessage = $"Merhaba {item.Owner?.FullName}, {item.AppointmentDate.ToString("dd MMMM yyyy HH:mm")} tarihinde can dostumuz {petNameStr} kliniğimizde randevunuz bulunmaktadır. Sağlıklı günler dileriz!";
+                                    tPhoneStr = tomorrowPhone!.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "");
+                                    if (!tPhoneStr.StartsWith("+90") && !tPhoneStr.StartsWith("90")) 
+                                    { 
+                                        tPhoneStr = "+90" + (tPhoneStr.StartsWith("0") ? tPhoneStr.Substring(1) : tPhoneStr); 
+                                    }
+                                }
+
+                                <tr class="border-bottom">
+                                    <td class="fw-bold text-dark" style="width: 100px;">
+                                        <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fs-6">
+                                            @item.AppointmentDate.ToString("HH:mm")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">
+                                            @(item.Pet != null ? item.Pet.Name : "Hasta Yok") 
+                                            <span class="text-muted small">(@item.Owner?.FullName)</span>
+                                        </div>
+                                        <small class="text-secondary"><i class="bi bi-telephone"></i> @(isTPhoneValid ? item.Owner!.PhoneNumber : "Telefon Yok")</small>
+                                    </td>
+                                    <td class="text-end">
+                                        @if(isTPhoneValid)
+                                        {
+                                            <a href="https://wa.me/@tPhoneStr?text=@Uri.EscapeDataString(tMessage)" target="_blank" class="btn btn-sm btn-success fw-bold rounded-pill shadow-sm px-3">
+                                                <i class="bi bi-whatsapp me-1"></i> Mesaj At
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-secondary fw-bold rounded-pill shadow-sm px-3 opacity-50" disabled title="Müşterinin numarası sisteme girilmemiş">
+                                                <i class="bi bi-whatsapp me-1"></i> Mesaj Atılamaz
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,155 @@
+@model VetPanelPremium.Models.Appointment
+@{ ViewData["Title"] = "Yeni Randevu Oluştur"; }
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    /* Select2'yi Premium tasarıma tam uydurmak için ufak estetik rötuşlar */
+    .select2-container .select2-selection--single {
+        height: 48px !important;
+        border: 0 !important;
+        background-color: #f8f9fa !important;
+        border-radius: 0.5rem !important;
+        padding-top: 10px;
+        padding-left: 6px;
+        box-shadow: none !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px !important;
+        right: 10px !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #dee2e6 !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .select2-search__field {
+        border-radius: 0.375rem !important;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="premium-card p-5 border-top border-primary border-4 shadow-lg mt-4">
+            <h3 class="fw-bold text-dark mb-4"><i class="bi bi-calendar-plus text-primary me-2"></i> Yeni Randevu Ekle</h3>
+            
+            <form asp-action="Create" method="post">
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger fw-bold mb-3 p-3 bg-danger bg-opacity-10 rounded border border-danger"></div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">
+                            <i class="bi bi-clock-history me-1"></i> Tarih ve Saat <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="AppointmentDate" type="datetime-local" class="form-control form-control-lg bg-light border-0 shadow-none border-start border-primary border-4" required />
+                        <span asp-validation-for="AppointmentDate" class="text-danger fw-bold mt-2 d-block bg-danger bg-opacity-10 p-2 rounded"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">
+                            <i class="bi bi-clipboard-pulse me-1"></i> Geliş Sebebi <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Reason" class="form-select form-select-lg bg-light border-0 shadow-none" required>
+                            <option value="">-- Seçiniz --</option>
+                            <option value="Genel Muayene">🩺 Genel Muayene</option>
+                            <option value="Aşı Uygulaması">💉 Aşı Uygulaması</option>
+                            <option value="Cerrahi Operasyon">✂️ Cerrahi Operasyon</option>
+                            <option value="Kontrol">🔄 Kontrol</option>
+                            <option value="Tıraş / Bakım">✂️ Tıraş / Bakım</option>
+                            <option value="Diğer">📋 Diğer</option>
+                        </select>
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">
+                            <i class="bi bi-person-fill me-1"></i> Müşteri Seçimi <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="OwnerId" class="form-select bg-light border-0 shadow-none" asp-items="ViewBag.Owners" required id="OwnerSelect">
+                            <option value="">-- Müşteri Arayın (İsim) --</option>
+                        </select>
+                        <span asp-validation-for="OwnerId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mt-3 mt-md-0">
+                        <label class="form-label fw-bold text-secondary">
+                            <i class="bi bi-box2-heart me-1"></i> Hasta (Pet) Seçimi
+                        </label>
+                        <select asp-for="PetId" class="form-select form-select-lg bg-light border-0 shadow-none" asp-items="ViewBag.Pets" id="PetSelect">
+                            <option value="">-- Önce Müşteri Seçin --</option>
+                        </select>
+                        <small class="text-muted"><i class="bi bi-info-circle"></i> Sadece soru sormaya geliyorsa boş bırakabilirsiniz.</small>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label fw-bold text-secondary">Randevu Notları (Opsiyonel)</label>
+                    <textarea asp-for="Notes" class="form-control bg-light border-0 shadow-none" rows="3" placeholder="Doktor için ön bilgi veya müşteri notu... (Örn: Köpek çok agresif, ağızlık takılmalı)"></textarea>
+                </div>
+
+                <hr class="my-4 text-muted" />
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg fw-bold rounded-3 px-4 shadow-sm">İptal Et</a>
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3 px-5 shadow text-white text-uppercase">
+                        <i class="bi bi-calendar-check me-1"></i> Randevuyu Kaydet
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            
+            // 1. ARAMA MOTORUNU ÇALIŞTIR (Select2)
+            $('#OwnerSelect').select2({
+                width: '100%', // Kutunun genişliğini tasarıma uydurur
+                placeholder: "🔍 Müşteri ismini yazın...", // Şık bir yer tutucu metin
+                language: {
+                    noResults: function () {
+                        return "Kayıtlı müşteri bulunamadı!";
+                    }
+                }
+            });
+
+            // 2. AJAX RADARI: Müşteri değiştiğinde hastalarını getir
+            $('#OwnerSelect').change(function () {
+                var selectedOwnerId = $(this).val(); 
+                var petSelect = $('#PetSelect');     
+
+                petSelect.empty();
+                
+                if (selectedOwnerId) {
+                    petSelect.append('<option value="">⏳ Hayvanlar yükleniyor...</option>');
+
+                    $.getJSON('/Appointments/GetPetsByOwner', { ownerId: selectedOwnerId }, function (data) {
+                        petSelect.empty(); 
+                        
+                        if (data.length > 0) {
+                            petSelect.append('<option value="">-- Hasta Seçin (Opsiyonel) --</option>');
+                            $.each(data, function (index, item) {
+                                petSelect.append($('<option/>', {
+                                    value: item.value,
+                                    text: item.text
+                                }));
+                            });
+                        } else {
+                            petSelect.append('<option value="">Bu müşteriye kayıtlı hasta yok</option>');
+                        }
+                    });
+                } else {
+                    petSelect.append('<option value="">-- Önce Müşteri Seçin --</option>');
+                }
+            });
+        });
+    </script>
+}

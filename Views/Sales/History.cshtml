@@ -1,0 +1,69 @@
+@model IEnumerable<VetPanelPremium.Models.Invoice>
+@{ ViewData["Title"] = "Detaylı Satış ve Kasa Arşivi"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-archive-fill text-secondary me-2"></i> Kasa Arşivi</h2>
+        <p class="text-muted small mt-1">Geçmişe dönük tüm satışlar, fişler ve veresiye kayıtları</p>
+    </div>
+    <a asp-controller="Sales" asp-action="Index" class="btn btn-outline-secondary fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Güncel Kasaya Dön
+    </a>
+</div>
+
+<div class="premium-card p-4 border-top border-secondary border-4 shadow-sm">
+    <div class="table-responsive">
+        
+        <table class="table table-hover align-middle mb-0 premium-datatable">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-secondary py-3">Fatura No</th>
+                    <th class="text-secondary py-3">Tarih & Saat</th>
+                    <th class="text-secondary py-3">Müşteri Bilgisi</th>
+                    <th class="text-secondary py-3 text-center">Ödeme Yöntemi</th>
+                    <th class="text-secondary py-3 text-end">Tutar</th>
+                    <th class="text-secondary py-3 text-center">İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr class="border-bottom">
+                            <td class="fw-bold text-secondary">#INV-@item.Id.ToString("D5")</td>
+                            <td>
+                                <span class="d-block fw-bold text-dark">@item.InvoiceDate.ToString("dd MMM yyyy")</span>
+                                <small class="text-muted"><i class="bi bi-clock me-1"></i>@item.InvoiceDate.ToString("HH:mm")</small>
+                            </td>
+                            <td class="fw-bold text-primary">
+                                @(item.Owner != null ? item.Owner.FullName : "Genel / Kayıtsız Müşteri")
+                            </td>
+                            <td class="text-center">
+                                @if (item.PaymentMethod == "Nakit") 
+                                { 
+                                    <span class="badge bg-success shadow-sm px-3 py-2"><i class="bi bi-cash me-1"></i> Nakit</span> 
+                                }
+                                else if (item.PaymentMethod == "Kredi Kartı") 
+                                { 
+                                    <span class="badge bg-primary shadow-sm px-3 py-2"><i class="bi bi-credit-card me-1"></i> Kart</span> 
+                                }
+                                else 
+                                { 
+                                    <span class="badge bg-danger shadow-sm px-3 py-2"><i class="bi bi-journal-text me-1"></i> Veresiye</span> 
+                                }
+                            </td>
+                            <td class="text-end fw-bold text-success fs-5">@item.TotalAmount.ToString("C")</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-secondary shadow-sm" title="Faturayı Yazdır" onclick="window.print()">
+                                    <i class="bi bi-printer"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+        
+    </div>
+</div>

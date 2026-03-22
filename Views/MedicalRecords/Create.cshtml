@@ -1,0 +1,91 @@
+@model VetPanelPremium.Models.MedicalRecord
+@{ ViewData["Title"] = "Yeni Muayene Kaydı"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-stethoscope text-success me-2"></i> Yeni Muayene Ekle</h2>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 fw-bold shadow-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Dosyaya Dön
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="premium-card p-5 border-top border-success border-4 shadow-sm">
+            
+            <div class="alert alert-success bg-opacity-10 border-success border-opacity-25 mb-4">
+                <i class="bi bi-info-circle-fill text-success me-2"></i> Şu anda <strong class="text-dark fs-5">@ViewBag.PetName</strong> isimli hastanın tıbbi dosyasına kayıt giriyorsunuz.
+            </div>
+
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger shadow-sm rounded-3 mb-3"></div>
+                
+                <input type="hidden" asp-for="PetId" />
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label asp-for="VisitDate" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-calendar-event"></i> Muayene Tarihi ve Saati
+                        </label>
+                        <input asp-for="VisitDate" class="form-control bg-light border-0 shadow-sm" />
+                        <span asp-validation-for="VisitDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="NextControlDate" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-calendar-plus text-primary"></i> Sonraki Kontrol / Randevu Tarihi
+                        </label>
+                        <input asp-for="NextControlDate" type="date" class="form-control bg-light border-0 shadow-sm" />
+                        <span class="text-muted small"><i class="bi bi-info-circle"></i> Seçilirse otomatik randevu oluşturulur.</span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label asp-for="Weight" class="form-label fw-bold text-info">
+                            <i class="bi bi-speedometer2"></i> Güncel Kilo
+                        </label>
+                        <div class="input-group shadow-sm">
+                            <input asp-for="Weight" type="number" step="0.01" min="0" class="form-control bg-light border-info border-start border-4 shadow-none" placeholder="Örn: 4.5" />
+                            <span class="input-group-text bg-white border-info text-info fw-bold">kg</span>
+                        </div>
+                        <span asp-validation-for="Weight" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="Complaint" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-chat-left-text"></i> Şikayet / Anamnez (Sahibinin Beyanı)
+                        </label>
+                        <textarea asp-for="Complaint" class="form-control bg-light border-0 shadow-sm" rows="2" placeholder="Örn: 2 gündür iştahsızlık, kusma ve halsizlik..."></textarea>
+                        <span asp-validation-for="Complaint" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Diagnosis" class="form-label fw-bold text-danger">
+                        <i class="bi bi-clipboard-pulse"></i> Kesin Teşhis veya Yapılan İşlem <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="Diagnosis" class="form-control form-control-lg bg-light border-0 shadow-sm border-start border-danger border-4" placeholder="Örn: Viral Enfeksiyon, Karma Aşı Uygulaması..." required />
+                    <span asp-validation-for="Diagnosis" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-5">
+                    <label asp-for="Treatment" class="form-label fw-bold text-primary">
+                        <i class="bi bi-capsule"></i> Uygulanan Tedavi / Reçete (Otomatik Adisyon)
+                    </label>
+                    <textarea asp-for="Treatment" class="form-control bg-light border-0 shadow-sm border-start border-primary border-4" rows="4" placeholder="Depodan düşmek ve faturaya yansıtmak istediğiniz ilaç adını buraya yazın (Örn: Kuduz Aşısı)"></textarea>
+                    <span asp-validation-for="Treatment" class="text-danger small"></span>
+                </div>
+
+                <div class="d-grid gap-2 border-top pt-4">
+                    <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm rounded-pill">
+                        <i class="bi bi-save2 me-2"></i> Muayeneyi Kaydet ve Dosyaya Ekle
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

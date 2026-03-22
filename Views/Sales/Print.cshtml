@@ -1,0 +1,102 @@
+@using VetPanelPremium.Models
+@model VetPanelPremium.Models.Invoice
+@{ 
+    Layout = null; 
+    
+    // Hastaları (Petleri) araya virgül koyarak şık bir metne dönüştürüyoruz
+    var petsList = ViewBag.Pets as IEnumerable<Pet>;
+    var petNames = petsList != null && petsList.Any() ? string.Join(", ", petsList.Select(p => p.Name)) : "Kayıtlı Değil";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>Fiş No: #INV-@Model.Id.ToString("D5")</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        /* Termal Yazıcı (Pos) Formatına Uygun CSS */
+        body { background-color: #555; font-family: 'Courier New', Courier, monospace; }
+        .receipt { max-width: 80mm; margin: 20px auto; background: #fff; padding: 15px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); color: #000; }
+        .receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+        .receipt-footer { text-align: center; border-top: 2px dashed #000; padding-top: 10px; margin-top: 10px; }
+        
+        .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px;}
+        .item-detail { font-size: 12px; color: #444; text-align: left; border-bottom: 1px dotted #ccc; padding-bottom: 4px; margin-bottom: 4px;}
+        
+        /* 🚀 Razor motorunu susturmak için @@media kullanıldı */
+        @@media print {
+            body { background-color: #fff; margin: 0; padding: 0; }
+            .receipt { max-width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body onload="setTimeout(function(){ window.print(); }, 300);">
+
+    <div class="receipt">
+        
+        <div class="receipt-header">
+            <h4 class="fw-bold mb-1">@ViewBag.ClinicName</h4>
+            <div class="small fw-bold mb-2">Tel: @ViewBag.ClinicPhone</div>
+            <div class="small border-top border-dark pt-1 mt-1">HİZMET DÖKÜM FİŞİ</div>
+            
+            <div class="text-start mt-3 small">
+                <div><strong>Tarih:</strong> @Model.InvoiceDate.ToString("dd.MM.yyyy HH:mm")</div>
+                <div><strong>Fiş No:</strong> #INV-@Model.Id.ToString("D5")</div>
+                <div class="mt-1"><strong>İlgilenen Hekim:</strong> @ViewBag.DoctorName</div>
+                <div><strong>Müşteri:</strong> @(Model.Owner != null ? Model.Owner.FullName : "Genel Müşteri")</div>
+                @if(Model.Owner != null)
+                {
+                    <div><strong>Hasta (Pet):</strong> @petNames</div>
+                }
+            </div>
+        </div>
+
+        <div class="receipt-body mb-3">
+            <div class="d-flex justify-content-between fw-bold border-bottom border-dark pb-1 mb-2">
+                <span>Ürün/Hizmet Detayı</span>
+                <span>Tutar</span>
+            </div>
+
+            @if (Model.InvoiceLines != null && Model.InvoiceLines.Any())
+            {
+                foreach (var item in Model.InvoiceLines)
+                {
+                    <div class="item-row fw-bold">
+                        <span>@(item.Product != null ? item.Product.Name : "Bilinmeyen Ürün")</span>
+                        <span>@item.LineTotal.ToString("C")</span>
+                    </div>
+                    <div class="item-detail">
+                        @item.Quantity Adet x @item.UnitPrice.ToString("C")
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center small fst-italic my-2">Ürün detayı bulunamadı.</div>
+            }
+        </div>
+
+        <div class="d-flex justify-content-between border-top border-dark pt-2 mt-2 fw-bold fs-5">
+            <span>TOPLAM:</span>
+            <span>@Model.TotalAmount.ToString("C")</span>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-1 small">
+            <span>Ödeme Tipi:</span>
+            <span>@Model.PaymentMethod</span>
+        </div>
+
+        <div class="receipt-footer">
+            <p class="fw-bold mb-1">Geçmiş Olsun! 🐾</p>
+            <small class="d-block mb-3">Bizi tercih ettiğiniz için teşekkür ederiz.</small>
+            
+            <div style="font-size: 10px; color: #333; line-height: 1.2;">
+                * İşbu belge bilgilendirme amaçlı hizmet dökümüdür. Fiyatlarımıza KDV dahildir. Resmi mali belge (e-Arşiv Fatura / ÖKC Fişi) ayrıca düzenlenmektedir.
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

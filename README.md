@@ -38,7 +38,7 @@ Hantal masaüstü yazılımlarının aksine; **VetPanel Premium**, kliniklerin r
 * JavaScript & Chart.js (Veri Görselleştirme)
 * DataTables (Dinamik Tablolama)
 
-* Yargın BAYDAR
+
 
 
 
